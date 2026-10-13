@@ -1,0 +1,13 @@
+target,successd,ruation_s,error_code,agent_retries
+kitchen,True,16.0,0,0
+room,True,16.14,0,0
+kitchen,True,12.22,0,0
+room,True,17.52,0,0
+kitchen,True,12.67,0,0
+room,True,16.97,0,0
+kitchen,True,12.54,0,0
+room,True,16.65,0,0
+kitchen,True,11.65,0,0
+room,True,16.53,0,0
+blocked,False,19.9,208,0
+blocked,False,20.92,208,0

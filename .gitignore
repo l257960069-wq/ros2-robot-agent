@@ -1,0 +1,20 @@
+# ROS2 build files
+build/
+install/
+log/
+
+# Python generated files
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments and secrets
+.venv/
+.env
+
+# Temporary editor files
+*.swp
+
+# Local benchmark history
+benchmark_result/agent_runs.csv
