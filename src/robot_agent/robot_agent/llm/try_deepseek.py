@@ -144,11 +144,7 @@ print(
     tools[0]["function"]["parameters"]["properties"]["target"]["enum"]
 )
 # 3.发送用户指令
-
-while True:
-    #从终端读取命令
-    user_command=input("请输入机器人指令： ").strip()
-    messages=[{
+messages=[{
     "role":"system",
     "content": (
             "你是机器人助手，可以通过多轮对话确认导航需求。"
@@ -157,15 +153,16 @@ while True:
             "只有success为true才能说导航成功。"
             "如果结果超时或未知，不能说已经到达。"
         )
-},
-{
-    "role": "user",
-    "content": user_command
 }]
+while True:
+    #从终端读取命令
+    user_command=input("请输入机器人指令： ").strip()
+   
     if user_command == "退出":
         break
     if not user_command:
         continue
+
     messages.append({
         "role": "user",
         "content": user_command
