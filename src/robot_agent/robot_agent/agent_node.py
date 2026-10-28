@@ -84,9 +84,19 @@ class RobotAgent(Node):
         if task['skill'] == 'navigate_to':
 
           if self._current_target is not None:
+            reason=(
+                f"RobotAgent 正忙"
+                f"当前正在导航到 {self._current_target}"
+            )
             self.get_logger().info(
                 f'Agent is busy with {self._current_target}'
             )
+            self.report_rejection(
+               task_id,
+               task["target"],
+               reason
+    )
+
             return
 
           self._current_target = task['target']
@@ -121,11 +131,18 @@ class RobotAgent(Node):
         return None
     def send_navigate_goal(self,target):
         self.get_logger().info(f'Sending navigation skill goal:{target}')
-        self._navigate_skill_client.wait_for_server()    #ROS2 ActionClient 的方法，阻塞当前代码停在这里，直到对应的 Action Server 出现。
-        if not self._navigate_skill_client.wait_for_server(timeout_sec=1.0):
+        #self._navigate_skill_client.wait_for_server()    #ROS2 ActionClient 的方法，阻塞当前代码停在这里，直到对应的 Action Server 出现。
+        if not self._navigate_skill_client.wait_for_server(timeout_sec=5.0):
            self.get_logger().error('NavigateSkill server unavailable')
-           self._current_target = None
+           result = NavigateSkill.Result()
+           result.success = False
+           result.error_code = -2
+           result.message = "NavigateSkill Action Server 不可用"
+
+           self.finish_task(result)
+           
            return
+
         goal_msg=NavigateSkill.Goal() #创建Action对象
         goal_msg.place=target    #给对象赋值
 
@@ -256,13 +273,35 @@ class RobotAgent(Node):
              #**row 表示把 row 字典中的所有键值对展开到新字典中，然后额外加入一个 task_id
              result_payload = {
                **row,
-               'task_id': completed_task_id
+               'task_id': completed_task_id,
+               'message': result.message
                }
              task_result_msg=String()
              task_result_msg.data=json.dumps(result_payload) #把 Python 字典转换成 JSON 格式的字符串
              self.task_result_pub.publish(task_result_msg)
              self.get_logger().info(f'Task result published:{task_result_msg.data}')
-                 
+    #增加拒绝回执函数
+    def report_rejection(self,task_id,target,reason):
+        if task_id is None:
+            return 
+
+        result={
+        "status": "rejected",
+        "success": False,
+        "target": target,
+        "message": reason,
+        "duration_s": 0.0,
+        "error_code": -1,
+        "agent_retries": 0,
+        "task_id": task_id
+        }
+        msg=String()
+        msg.data=json.dumps(result,ensure_ascii=False)
+        self.task_result_pub.publish(msg)
+        self.get_logger().warning(
+          f"Task rejected: {reason}, task_id={task_id}"
+        )
+        
 
          
 def main(args=None):
